@@ -100,23 +100,6 @@ type Configuration struct {
 	Result  []TransactionBlockEtherScan `json:"result"`
 }
 
-/* Takes a string input string in HEX with leading '0x' (ex: "0x77359400")
-and returns the ETH value as a uint64 */
-func WeiToEth(str string) (float64, error) {
-
-	rmPrefix := strings.SplitAfter(str, "x")
-
-	x, err := strconv.ParseInt(rmPrefix[1], 16, 64)
-	if err != nil {
-		fmt.Printf("Error in strconv.ParseInt conversion: %s\n", err)
-		return -1, err
-	}
-
-	res := (float64(x) * float64(1e-18))
-
-	return res, nil
-}
-
 /* Takes a hex string and converts the number to a int*/
 func hextoDecimal(hexinput string) (result int64, err error) {
 	rmPrefix := strings.SplitAfter(hexinput, "x")
@@ -236,26 +219,26 @@ func GetTransactions(address string, days int64) ([]TransactionBlockEtherScan, e
 	FullListOfTransactions := []TransactionBlockEtherScan{}
 	var counter int64 = 0
 
-	const blocksPerCall int64 = 20000
+	const blocksPerCall int64 = 1920
 
-	currBlockNumber, err := GetLatestBlockNumber()
-	if err != nil {
-		fmt.Println("Error retrieving the Latest Block Number: ", err)
-		return nil, err
-	}
 	startingblock, err := GetStartingBlockNumber(days)
 	if err != nil {
 		fmt.Println("Error with retrieving the Starting Block Number: ", err)
 		return nil, err
 	}
+	currBlockNumber, err := GetLatestBlockNumber()
+	if err != nil {
+		fmt.Println("Error retrieving the Latest Block Number: ", err)
+		return nil, err
+	}
 
-	limit := ((currBlockNumber - startingblock) / blocksPerCall) + 1
+	limit := ((currBlockNumber - startingblock) / blocksPerCall)
 
 	for counter < limit {
 
 		blknumstr := strconv.FormatInt((startingblock + (blocksPerCall * counter)), 10)
 		startingBlockNumber = blknumstr
-		endingBlockStr := strconv.FormatInt((startingblock+20000)+(blocksPerCall*counter), 10)
+		endingBlockStr := strconv.FormatInt((startingblock)+(blocksPerCall*(counter+1)), 10)
 		endingBlockNumber = endingBlockStr
 		contractAddress = address
 		etherScanUrl = "https://api.etherscan.io/api?module=account&action=txlist&address="
